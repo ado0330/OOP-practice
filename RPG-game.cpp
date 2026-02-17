@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 using namespace std;
 
 class Entity {
@@ -34,6 +35,7 @@ public:
         HealthPoints -= damage;
     }
 
+
     void BasicAttack(Entity & target) {
         cout << Name << " use Basic Attack." << endl;
         target.TakeDamage(getATK());
@@ -45,13 +47,16 @@ public:
         if (HealthPoints > 0) return true;
         else return false;
     }
+
+    virtual void UseSkill(Entity & target) {};
+
 };
 
 
 class Warrior:public Entity {
 public:
     Warrior(string name):Entity(name, 100, 50, 0) {}
-    void SpecialAttack(Entity &target) {
+    void UseSkill(Entity &target) override{
             int totalDamage = ATK * 2 + rand() % 10;
             cout << "Tactical Attack!" << endl;
             target.TakeDamage(totalDamage);
@@ -63,7 +68,7 @@ class Mage: public Entity {
 public:
     Mage(string name):Entity(name, 100, 30, 50) {}
     const int FIREBALL_COST = 25;
-    void FireBall(Entity &target) {
+    void UseSkill(Entity &target) override{
         int totalDamage = ATK * 3;
             if (ManaPoints >= FIREBALL_COST) {
                 cout << "Fire Ball!" << endl;
@@ -80,6 +85,9 @@ public:
 class Slime:public Entity {
 public:
     Slime():Entity("Slime", 300, 10, 0) {}
+    void UseSkill(Entity &target) override {
+        BasicAttack(target);
+    }
 };
 
 
@@ -88,21 +96,49 @@ int main() {
     
     srand(time(0));
 
-    Mage player("Jason");
-    Slime slime;
+    string name;
+    int choice;
+    Entity* player = nullptr;
 
-    cout << "---Battle Start---" << endl;
-    while (player.IsAlive() && slime.IsAlive()) {
-        player.FireBall(slime);
-        
-        if (slime.IsAlive()) {
-            slime.BasicAttack(player); 
-        }
-        cout << "--------------------" << endl;
-        player.AddMP(5);
+    cout << "Enter your name: " << endl;
+    getline(cin, name);
+
+    do {
+        cout << "----------SELECT YOUR CLASS----------" << endl;
+        cout << "1. Warrior" << endl;
+        cout << "2. Mage" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        if (choice != 1 && choice != 2) cout << "Invalid choice!" << endl;
+    } while (choice != 1 && choice != 2);
+
+    switch (choice) {
+        case 1:
+            player = new Warrior(name);
+            break;
+        case 2:
+            player = new Mage(name);
+            break;
+
     }
 
-    if (player.IsAlive()) {
+    Slime slime;
+
+
+
+    cout << "---Battle Start---" << endl;
+    while (player->IsAlive() && slime.IsAlive()) {
+        player->UseSkill(slime);
+        
+        if (slime.IsAlive()) {
+            slime.BasicAttack(*player); 
+        }
+        cout << "--------------------" << endl;
+        player->AddMP(5);
+    }
+
+    if (player->IsAlive()) {
         cout << "You WON!!" << endl;
     } else {
         cout << "GAME OVER" << endl;
