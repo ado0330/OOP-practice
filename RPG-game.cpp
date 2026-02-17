@@ -28,6 +28,14 @@ public:
         return Name;
     }
 
+    int getHP() {
+        return HealthPoints;
+    }
+
+    int getMP() {
+        return ManaPoints;
+    }
+
     int getATK() {
         return ATK;
     }
@@ -88,7 +96,7 @@ public:
         cout << "Weapon: " << Weapon << endl;
         cout << "Gold: " << getGold() << endl;
         cout << "------------------------" << endl;
-    
+        cout << "Press Enter to Continue\n" << endl;
     }
 
     void WeaponBuff(int hp, int atk, int mp) {
@@ -145,22 +153,51 @@ public:
 
 void goToCave(Entity *player) {
     //Battle Logic
+    int action;
     Slime slime;
-    int amount = 100;
+    int goldReward = 100;
     cout << "\n--- You entered a dark cave and found a Slime! ---" << endl;
     while (player->IsAlive() && slime.IsAlive()) {
-        player->ShowStatus();
-        player->UseSkill(slime);
+        //Battle Menu
+        cout << "\n[" << player->getName() << " HP: " << player->getHP() << " | MP: " << player->getMP() << "]" << endl;
+        cout << "[Enemy " << slime.getName() << " HP: " << slime.getHP() << "]" << endl;
         
-        if (slime.IsAlive()) {
-            slime.BasicAttack(*player); 
+        int choice;
+        cout << "1. Basic Attack   2. Skill   3. Skip\nChoice: ";
+        cin >> choice;
+
+        //Player turn
+        switch(choice) {
+            case 1:
+                player->BasicAttack(slime);
+                break;
+            case 2:
+                player->UseSkill(slime);
+                break;
+            case 3:
+                cout << "You Skipped your turn." << endl;
+            default:
+                cout << "You hesitated and wasted your turn!" << endl;
         }
-        player->AddMP(5); 
+
+        //Monster turn
+        if(slime.IsAlive()) {
+            cout << " --- Slime's Turn --- " << endl;
+            slime.UseSkill(*player);
+        } else {
+            cout << "Slime have been defeated..." << endl;
+        }
+
+        player->AddMP(5);
+        cout << "-----------------------------" << endl;
+        cout << "Press Enter to Continue." << endl;
+        cin.ignore();
+        cin.get();
     }   
     if (player->IsAlive()) {
-        player->AddGold(amount);
+        player->AddGold(goldReward);
         cout << "You WON!!" << endl;
-        cout << "You gain " << amount << " gold!" << endl;
+        cout << "You gain " << goldReward << " gold!" << endl;
         cout << "Now you have " << player->getGold() << " gold!" << endl;
     } else {
         cout << "You were defeated..." << endl;
