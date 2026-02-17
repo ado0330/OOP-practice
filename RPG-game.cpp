@@ -151,16 +151,38 @@ public:
     string getClassName() {return "Monster";}
 };
 
+class Goblin:public Entity {
+public:
+    Goblin():Entity("Goblin", 300, 15, 0, "") {}
+    void UseSkill(Entity &target) override {
+        BasicAttack(target);
+    }
+    string getClassName() {return "Monster";}
+};
+
 void goToCave(Entity *player) {
-    //Battle Logic
-    int action;
-    Slime slime;
+    int AMOUNT_MONSTER_TYPE = 2;
+    Entity *enemy = nullptr;
+    //Random Monster logic
+    int r = rand() % AMOUNT_MONSTER_TYPE;
+
+    switch(r) {
+        case 0:
+            enemy = new Slime();
+            break;
+        case 1:
+            enemy = new Goblin();
+            break;
+    }
+
+
+
     int goldReward = 100;
-    cout << "\n--- You entered a dark cave and found a Slime! ---" << endl;
-    while (player->IsAlive() && slime.IsAlive()) {
+    cout << "\n--- You entered a dark cave and found a " << enemy->getName() << "  ---" << endl;
+    while (player->IsAlive() && enemy->IsAlive()) {
         //Battle Menu
         cout << "\n[" << player->getName() << " HP: " << player->getHP() << " | MP: " << player->getMP() << "]" << endl;
-        cout << "[Enemy " << slime.getName() << " HP: " << slime.getHP() << "]" << endl;
+        cout << "[Enemy " << enemy->getName() << " HP: " << enemy->getHP() << "]" << endl;
         
         int choice;
         cout << "1. Basic Attack   2. Skill   3. Skip\nChoice: ";
@@ -169,23 +191,24 @@ void goToCave(Entity *player) {
         //Player turn
         switch(choice) {
             case 1:
-                player->BasicAttack(slime);
+                player->BasicAttack(*enemy);
                 break;
             case 2:
-                player->UseSkill(slime);
+                player->UseSkill(*enemy);
                 break;
             case 3:
                 cout << "You Skipped your turn." << endl;
+                break;
             default:
                 cout << "You hesitated and wasted your turn!" << endl;
         }
 
         //Monster turn
-        if(slime.IsAlive()) {
-            cout << " --- Slime's Turn --- " << endl;
-            slime.UseSkill(*player);
+        if(enemy->IsAlive()) {
+            cout << " --- " << enemy->getName() << "'s Turn --- " << endl;
+            enemy->UseSkill(*player);
         } else {
-            cout << "Slime have been defeated..." << endl;
+            cout << enemy->getName() << " has been defeated..." << endl;
         }
 
         player->AddMP(5);
@@ -202,6 +225,9 @@ void goToCave(Entity *player) {
     } else {
         cout << "You were defeated..." << endl;
     }
+
+    delete enemy;
+    enemy = nullptr;
 }
 
 void goToShop(Entity *player) {
@@ -226,14 +252,14 @@ void goToShop(Entity *player) {
     int gold = player->getGold();
     string className = player->getClassName();
 
-    if (gold >= 300 && className == "Warrior" && choice == 1) {
+    if (gold >= AMOUNT_WARRIOR_WEAPON && className == "Warrior" && choice == 1) {
         cout << "Purchase successful!" << endl;
         player->spendGold(AMOUNT_WARRIOR_WEAPON);
         player->setWeapon(WEAPON_WARRIOR);
         player->WeaponBuff(10, 10, 0);
         
 
-    } else if (gold >= 300 && className == "Mage" && choice == 2) {
+    } else if (AMOUNT_MAGE_WEAPON && className == "Mage" && choice == 2) {
         cout << "Purchase successful!" << endl;
         player->spendGold(AMOUNT_MAGE_WEAPON);
         player->setWeapon(WEAPON_MAGE);
